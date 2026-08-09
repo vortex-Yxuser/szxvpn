@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#0B0C10">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="18dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="SSH Payload VPN"
+            android:textColor="#FFFFFF"
+            android:textSize="28sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/status"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="READY"
+            android:textColor="#7CFF7C"
+            android:textSize="14sp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:text="SSH"
+            android:textColor="#BCA8FF"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <EditText
+            android:id="@+id/sshHost"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="SSH host"
+            android:inputType="textUri" />
+
+        <EditText
+            android:id="@+id/sshPort"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="SSH port"
+            android:inputType="number"
+            android:text="22" />
+
+        <EditText
+            android:id="@+id/sshUser"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="SSH username" />
+
+        <EditText
+            android:id="@+id/sshPass"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="SSH password"
+            android:inputType="textPassword" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:text="HTTP PROXY + PAYLOAD"
+            android:textColor="#BCA8FF"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <EditText
+            android:id="@+id/proxyHost"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Proxy host" />
+
+        <EditText
+            android:id="@+id/proxyPort"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Proxy port"
+            android:inputType="number"
+            android:text="443" />
+
+        <EditText
+            android:id="@+id/payload"
+            android:layout_width="match_parent"
+            android:layout_height="150dp"
+            android:gravity="top"
+            android:hint="Payload"
+            android:inputType="textMultiLine"
+            android:text="CONNECT [host_port] [protocol][crlf]Host: api.Snapchat.com[crlf][crlf]" />
+
+        <Button
+            android:id="@+id/connect"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:text="CONNECT" />
+
+        <Button
+            android:id="@+id/disconnect"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="DISCONNECT" />
+
+        <TextView
+            android:id="@+id/log"
+            android:layout_width="match_parent"
+            android:layout_height="420dp"
+            android:layout_marginTop="14dp"
+            android:background="#050609"
+            android:fontFamily="monospace"
+            android:padding="12dp"
+            android:textColor="#B7FFB7"
+            android:textSize="12sp" />
+
+    </LinearLayout>
+</ScrollView>
