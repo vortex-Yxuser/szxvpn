@@ -1,34 +1,44 @@
 workflows:
   android-debug:
     name: SZXVPN Android Debug
-    max_build_duration: 30
+    max_build_duration: 60
     instance_type: linux_x2
+
+    environment:
+      java: 17
 
     scripts:
       - name: Check project
         script: |
-          echo "=== Project ==="
-          pwd
+          echo "Checking Android project..."
           ls -la
-          echo "=== Gradle ==="
-          ls -la gradlew
-          ./gradlew --version
+          ls -la app
 
-      - name: Set Android SDK location
+      - name: Prepare Gradle
         script: |
-          echo "sdk.dir=$ANDROID_SDK_ROOT" > "$CM_BUILD_DIR/local.properties"
+          if [ ! -f "./gradlew" ]; then
+            echo "ERROR: gradlew is missing"
+            echo "Generating Gradle wrapper..."
+            gradle wrapper
+          fi
+          chmod +x ./gradlew
+
+      - name: Clean project
+        script: |
+          ./gradlew clean
 
       - name: Build Debug APK
         script: |
-          chmod +x gradlew
-          ./gradlew clean
           ./gradlew assembleDebug --stacktrace
 
     artifacts:
-      - app/build/outputs/apk/debug/*.apk
+      - app/build/outputs/apk/**/*.apk
+      - app/build/outputs/apk/**/*.aab
 
     publishing:
       email:
+        recipients:
+          - YOUR_EMAIL@example.com
         notify:
           success: true
           failure: true
