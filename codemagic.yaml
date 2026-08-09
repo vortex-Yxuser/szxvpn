@@ -1,34 +1,43 @@
+workflows:
   android-debug:
-    name: Android Debug APK
-    instance_type: mac_mini_m2
+    name: SZXVPN Android Debug
     max_build_duration: 30
 
     environment:
-      groups:
-        - google_play
       vars:
         PACKAGE_NAME: "com.example.sshpayloadvpn"
-      android_signing:
-        - debug_keystore
 
     scripts:
-      - name: Check project
+      - name: Make Gradle executable
         script: |
-          echo "Project files:"
+          chmod +x gradlew
+
+      - name: Check project structure
+        script: |
+          echo "=== Project ==="
+          pwd
+          echo "=== Files ==="
           ls -la
-          echo "App files:"
+          echo "=== App ==="
           ls -la app
+
+      - name: Clean project
+        script: |
+          ./gradlew clean
 
       - name: Build Debug APK
         script: |
-          chmod +x gradlew
-          ./gradlew clean
           ./gradlew assembleDebug --stacktrace
 
     artifacts:
       - app/build/outputs/apk/debug/*.apk
 
     publishing:
-      email:
-        recipients:
-          - your-email@example.com
+      scripts:
+        - name: Build completed
+          script: |
+            echo "========================================"
+            echo " SZXVPN DEBUG BUILD COMPLETED"
+            echo " APK:"
+            find app/build/outputs/apk/debug -name "*.apk" -print
+            echo "========================================"
