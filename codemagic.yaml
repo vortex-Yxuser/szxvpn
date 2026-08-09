@@ -2,42 +2,33 @@ workflows:
   android-debug:
     name: SZXVPN Android Debug
     max_build_duration: 30
-
-    environment:
-      vars:
-        PACKAGE_NAME: "com.example.sshpayloadvpn"
+    instance_type: linux_x2
 
     scripts:
-      - name: Make Gradle executable
-        script: |
-          chmod +x gradlew
-
-      - name: Check project structure
+      - name: Check project
         script: |
           echo "=== Project ==="
           pwd
-          echo "=== Files ==="
           ls -la
-          echo "=== App ==="
-          ls -la app
+          echo "=== Gradle ==="
+          ls -la gradlew
+          ./gradlew --version
 
-      - name: Clean project
+      - name: Set Android SDK location
         script: |
-          ./gradlew clean
+          echo "sdk.dir=$ANDROID_SDK_ROOT" > "$CM_BUILD_DIR/local.properties"
 
       - name: Build Debug APK
         script: |
+          chmod +x gradlew
+          ./gradlew clean
           ./gradlew assembleDebug --stacktrace
 
     artifacts:
       - app/build/outputs/apk/debug/*.apk
 
     publishing:
-      scripts:
-        - name: Build completed
-          script: |
-            echo "========================================"
-            echo " SZXVPN DEBUG BUILD COMPLETED"
-            echo " APK:"
-            find app/build/outputs/apk/debug -name "*.apk" -print
-            echo "========================================"
+      email:
+        notify:
+          success: true
+          failure: true
