@@ -5,9 +5,7 @@ import android.content.Intent
 import android.net.VpnService
 import android.os.Build
 import android.os.Bundle
-import android.widget.Button
-import android.widget.EditText
-import android.widget.TextView
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 
@@ -16,30 +14,31 @@ class MainActivity : AppCompatActivity() {
     private lateinit var status: TextView
     private lateinit var logView: TextView
 
+    companion object {
+        private const val VPN_REQUEST = 100
+    }
+
     private val logListener: (String) -> Unit = { line ->
-        logView.append(line + "\n")
-        status.text = line
+        runOnUiThread {
+            logView.append(line + "\n")
+            status.text = line
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         setContentView(R.layout.activity_main)
 
         status = findViewById(R.id.status)
         logView = findViewById(R.id.log)
 
-        val connect = findViewById<Button>(R.id.connect)
-        val disconnect = findViewById<Button>(R.id.disconnect)
-
-        connect.setOnClickListener {
-            requestVpnAndConnect()
+        findViewById<Button>(R.id.connect).setOnClickListener {
+            requestVpn()
         }
 
-        disconnect.setOnClickListener {
-            startService(
-                Intent(this, SshVpnService::class.java)
-                    .setAction(SshVpnService.ACTION_DISCONNECT)
-            )
+        findViewById<Button>(R.id.disconnect).setOnClickListener {
+            disconnect()
         }
     }
 
@@ -53,44 +52,138 @@ class MainActivity : AppCompatActivity() {
         super.onStop()
     }
 
-    private fun requestVpnAndConnect() {
+    private fun requestVpn() {
+
         val prepare = VpnService.prepare(this)
 
         if (prepare != null) {
-            startActivityForResult(prepare, 100)
+            startActivityForResult(
+                prepare,
+                VPN_REQUEST
+            )
         } else {
-            startVpnService()
+            startVpn()
         }
     }
 
-    @Deprecated("Use Activity Result API in a future UI refactor")
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == 100 && resultCode == Activity.RESULT_OK) {
-            startVpnService()
-        } else if (requestCode == 100) {
-            AppLog.e("VPN permission was not granted")
+    @Deprecated("Legacy Activity Result API")
+    override fun onActivityResult(
+        requestCode: Int,
+        resultCode: Int,
+        data: Intent?
+    ) {
+        super.onActivityResult(
+            requestCode,
+            resultCode,
+            data
+        )
+
+        if (requestCode == VPN_REQUEST) {
+
+            if (resultCode == Activity.RESULT_OK) {
+                startVpn()
+            } else {
+                AppLog.e("VPN permission denied")
+            }
         }
     }
 
-    private fun startVpnService() {
-        fun text(id: Int): String =
-            findViewById<EditText>(id).text.toString().trim()
+    private fun startVpn() {
 
-        val intent = Intent(this, SshVpnService::class.java)
-            .setAction(SshVpnService.ACTION_CONNECT)
-            .putExtra(SshVpnService.EXTRA_SSH_HOST, text(R.id.sshHost))
-            .putExtra(SshVpnService.EXTRA_SSH_PORT, text(R.id.sshPort).toIntOrNull() ?: 22)
-            .putExtra(SshVpnService.EXTRA_SSH_USER, text(R.id.sshUser))
-            .putExtra(SshVpnService.EXTRA_SSH_PASS, text(R.id.sshPass))
-            .putExtra(SshVpnService.EXTRA_PROXY_HOST, text(R.id.proxyHost))
-            .putExtra(SshVpnService.EXTRA_PROXY_PORT, text(R.id.proxyPort).toIntOrNull() ?: 443)
-            .putExtra(SshVpnService.EXTRA_PAYLOAD, text(R.id.payload))
+        val vlessUrl =
+            findViewById<EditText>(R.id.vlessUrl)
+                .text
+                .toString()
+                .trim()
+
+        if (vlessUrl.isBlank()) {
+            AppLog.e("VLESS URL is empty")
+            return
+        }
+
+        val proxyEnabled =
+            findViewById<CheckBox>(R.id.proxyEnabled).isChecked
+
+        val proxyType =
+            findViewById<Spinner>(R.id.proxyType)
+                .selectedItem
+                .toString()
+
+        val proxyHost =
+            findViewById<EditText>(R.id.proxyHost)
+                .text
+                .toString()
+                .trim()
+
+        val proxyPort =
+            findViewById<EditText>(R.id.proxyPort)
+                .text
+                .toString()
+                .toIntOrNull()
+                ?: 8080
+
+        val proxyUser =
+            findViewById<EditText>(R.id.proxyUser)
+                .text
+                .toString()
+
+        val proxyPassword =
+            findViewById<EditText>(R.id.proxyPassword)
+                .text
+                .toString()
+
+        val intent =
+            Intent(this, VlessVpnService::class.java)
+                .setAction(VlessVpnService.ACTION_CONNECT)
+                .putExtra(
+                    VlessVpnService.EXTRA_VLESS_URL,
+                    vlessUrl
+                )
+                .putExtra(
+                    VlessVpnService.EXTRA_PROXY_ENABLED,
+                    proxyEnabled
+                )
+                .putExtra(
+                    VlessVpnService.EXTRA_PROXY_TYPE,
+                    proxyType
+                )
+                .putExtra(
+                    VlessVpnService.EXTRA_PROXY_HOST,
+                    proxyHost
+                )
+                .putExtra(
+                    VlessVpnService.EXTRA_PROXY_PORT,
+                    proxyPort
+                )
+                .putExtra(
+                    VlessVpnService.EXTRA_PROXY_USER,
+                    proxyUser
+                )
+                .putExtra(
+                    VlessVpnService.EXTRA_PROXY_PASSWORD,
+                    proxyPassword
+                )
 
         if (Build.VERSION.SDK_INT >= 26) {
-            ContextCompat.startForegroundService(this, intent)
+            ContextCompat.startForegroundService(
+                this,
+                intent
+            )
         } else {
             startService(intent)
         }
+    }
+
+    private fun disconnect() {
+
+        val intent =
+            Intent(
+                this,
+                VlessVpnService::class.java
+            ).setAction(
+                VlessVpnService.ACTION_DISCONNECT
+            )
+
+        startService(intent)
     }
 }
