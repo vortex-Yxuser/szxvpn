@@ -1,4 +1,3 @@
-Enterworkflows:
   android-debug:
     name: Android Debug APK
     instance_type: mac_mini_m2
